@@ -13,4 +13,29 @@ class MailerExtension < Radiant::Extension
       include MailerProcess
     end
   end
+  
+  Mail.class_eval do
+      def send_jp
+        Hash.class_eval do
+          def to_yaml_jp
+            self.to_a.map {|k,v| "#{k}: #{v}"}.join("\n")
+          end
+
+          alias_method :to_yaml_org, :to_yaml
+          alias_method :to_yaml, :to_yaml_jp
+        end
+
+        return_value = send_org
+
+        Hash.class_eval do
+          alias_method :to_yaml, :to_yaml_org
+        end
+
+        return_value
+      end
+
+      alias_method :send_org, :send
+      alias_method :send, :send_jp
+    end
+
 end
